@@ -35,6 +35,8 @@ jobs:
           pnpm --filter @n8n/n8n-nodes-langchain test nodes/vendors/Ollama/methods/listSearch.test.ts --maxWorkers=1
       - name: Smoke test image
         run: pnpm build:docker:smoke
+        env:
+          SMOKE_SKIP_CLOUD: "true"
       - name: Sign in to GitHub Container Registry
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
