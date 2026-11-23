@@ -1,0 +1,75 @@
+name: Pobify upstream sync
+
+on:
+  schedule:
+    - cron: "15 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check automation token
+        env:
+          AUTOMATION_TOKEN: ${{ secrets.POBIFY_AUTOMATION_TOKEN }}
+        run: |
+          if [ -z "$AUTOMATION_TOKEN" ]; then
+            echo "POBIFY_AUTOMATION_TOKEN is required so pull requests trigger CI."
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: pobify
+          token: ${{ secrets.POBIFY_AUTOMATION_TOKEN }}
+      - name: Merge current upstream
+        env:
+          GH_TOKEN: ${{ secrets.POBIFY_AUTOMATION_TOKEN }}
+        run: |
+          git config user.name "pobify-sync[bot]"
+          git config user.email "pobify-sync[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/n8n-io/n8n.git
+          git fetch upstream master --tags
+          if git merge-base --is-ancestor upstream/master HEAD; then
+            exit 0
+          fi
+          branch="automation/upstream-$(git rev-parse --short upstream/master)"
+          if [ "$(gh pr list --state all --head "$branch" --json number --jq length)" -gt 0 ]; then
+            echo "A pull request already exists for $branch."
+            exit 0
+          fi
+          git switch -c "$branch"
+          if ! git merge --no-edit upstream/master; then
+            git merge --abort
+            if [ "$(gh issue list --state open --search 'Upstream sync needs conflict resolution in:title' --json number --jq length)" -eq 0 ]; then
+              gh issue create --title "Upstream sync needs conflict resolution" --body "The daily merge of n8n upstream master into pobify has conflicts. Resolve them manually before the next release."
+            fi
+            exit 1
+          fi
+          git push origin "$branch"
+          gh pr create --base pobify --head "$branch" --title "chore: sync n8n upstream" --body "Automated daily upstream merge. Merge only after CI and the Pobify integration checks pass."
+
+  mirror:
+    needs: sync
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: pobify
+      - name: Update independent mirror
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          if [ -z "$MIRROR_TOKEN" ]; then
+            echo "MIRROR_TOKEN is not configured; the existing independent mirror is unchanged."
+            exit 0
+          fi
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*' --prune
+          git remote add mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/PoghyBiboLabs/n8n-pobify-mirror.git"
+          git push mirror --prune '+refs/remotes/origin/*:refs/heads/*'
+          git push mirror --prune '+refs/tags/*:refs/tags/*'
