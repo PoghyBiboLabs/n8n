@@ -27,14 +27,12 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build test configuration
-        run: pnpm turbo run build --filter=@n8n/vitest-config --filter=@n8n/frontend-vite-config
+      - name: Build n8n image
+        run: pnpm build:docker
       - name: Run Pobify tests
         run: |
           pnpm --filter n8n-editor-ui test src/app/components/app/ResourceUsageOverlay.test.ts src/features/ndv/parameters/components/ResourceLocator/ResourceLocatorDropdown.test.ts --maxWorkers=1
           pnpm --filter @n8n/n8n-nodes-langchain test nodes/vendors/Ollama/methods/listSearch.test.ts --maxWorkers=1
-      - name: Build n8n image
-        run: pnpm build:docker
       - name: Smoke test image
         run: pnpm build:docker:smoke
       - name: Sign in to GitHub Container Registry
