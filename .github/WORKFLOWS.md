@@ -1374,6 +1374,19 @@ Adding a new channel requires inviting the bot first; the first run otherwise fa
 
 ---
 
+## Pobify Fork Workflows
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| `util-pobify-sync.yml` | Daily schedule, manual | Opens one upstream merge PR per upstream tip and synchronizes the private mirror. The file must also exist on the fork's default branch for the schedule to run. |
+| `build-pobify-image.yml` | Push to `pobify`, manual | Builds the fork and publishes the `ghcr.io/poghybibolabs/n8n:pobify` image. |
+
+`util-pobify-sync.yml` requires `POBIFY_AUTOMATION_TOKEN` for fork contents, workflows, issues, and pull
+requests. It requires `MIRROR_TOKEN` for private-mirror contents and workflows. Do not use the workflow token for
+the upstream merge branch. A branch push with that token does not start pull-request CI.
+
+---
+
 ## Secrets
 
 ### By Category

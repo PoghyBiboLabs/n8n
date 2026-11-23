@@ -364,6 +364,7 @@ watch(
 							props.disableInactiveItems && 'active' in result && result.active === false,
 					}"
 					data-test-id="rlc-item"
+					:title="result.description"
 					@click="() => onItemClick(result.value, result)"
 					@mouseenter="() => onItemHover(i + 1)"
 					@mouseleave="() => onItemHoverLeave()"
@@ -389,6 +390,9 @@ watch(
 								@click="openUrl($event, result.url)"
 							/>
 						</div>
+						<span v-if="result.description" :class="$style.resourceDescription">
+							{{ result.description }}
+						</span>
 					</div>
 				</div>
 				<div v-if="props.loading && !props.errorView">
@@ -463,7 +467,7 @@ watch(
 	display: flex;
 	padding: 0 var(--spacing--xs);
 	white-space: nowrap;
-	height: 32px;
+	min-height: 32px;
 	cursor: pointer;
 
 	&:hover {
@@ -525,11 +529,21 @@ watch(
 
 .resourceNameContainer {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	font-size: var(--font-size--2xs);
 	min-width: 0;
 	align-self: center;
 	flex: 1;
+}
+
+.resourceDescription {
+	flex-basis: 100%;
+	padding-bottom: var(--spacing--3xs);
+	overflow: hidden;
+	color: var(--color--text--tint-1);
+	font-size: var(--font-size--3xs);
+	text-overflow: ellipsis;
 }
 
 .resourceNameContainer > :first-child {

@@ -39,6 +39,22 @@ describe('ResourceLocatorDropdown', () => {
 		vi.useRealTimers();
 	});
 
+	it('shows a resource description without requiring hover', () => {
+		const description = 'Size: 4.4 GB | Estimated RAM: 5.3 GB';
+		renderComponent({
+			props: {
+				show: true,
+				resources: [{ name: 'llama3.1:8b', value: 'llama3.1:8b', description }],
+			},
+		});
+
+		expect(screen.getByText('llama3.1:8b').closest('[data-test-id="rlc-item"]')).toHaveAttribute(
+			'title',
+			description,
+		);
+		expect(screen.getByText(description)).toBeVisible();
+	});
+
 	it('should show search required message even when loading', () => {
 		renderComponent({
 			props: {

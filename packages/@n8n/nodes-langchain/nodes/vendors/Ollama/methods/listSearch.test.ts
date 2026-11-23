@@ -16,6 +16,31 @@ describe('Ollama List Search Methods', () => {
 	});
 
 	describe('modelSearch', () => {
+		it('should describe model requirements in the existing model list', async () => {
+			apiRequestMock.mockResolvedValue({
+				models: [
+					{
+						name: 'llama3.1:8b',
+						size: 4_700_000_000,
+						details: {
+							family: 'llama',
+							parameter_size: '8B',
+							quantization_level: 'Q4_K_M',
+						},
+					},
+				],
+			});
+
+			const result = await modelSearch.call(loadOptionsFunctionsMock);
+
+			expect(result.results[0]).toEqual({
+				name: 'llama3.1:8b',
+				value: 'llama3.1:8b',
+				description:
+					'Size: 4.4 GB | Family: llama | Parameters: 8B | Quantization: Q4_K_M | Estimated RAM: 5.3 GB | Feasibility: Suitable for 8 GB RAM',
+			});
+		});
+
 		it('should return all models when no filter is provided', async () => {
 			apiRequestMock.mockResolvedValue({
 				models: [

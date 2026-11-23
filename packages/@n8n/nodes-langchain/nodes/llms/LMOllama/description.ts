@@ -40,6 +40,7 @@ export const ollamaModel: INodeProperties = {
 							properties: {
 								name: '={{$responseItem.name}}',
 								value: '={{$responseItem.name}}',
+								description: `={{$responseItem.size && $responseItem.details ? 'Size: ' + ($responseItem.size / ${1024 ** 3}).toFixed(1) + ' GB | Family: ' + ($responseItem.details.family || 'unknown') + ' | Parameters: ' + ($responseItem.details.parameter_size || 'unknown') + ' | Quantization: ' + ($responseItem.details.quantization_level || 'unknown') + ' | Estimated RAM: ' + ($responseItem.size * 1.2 / ${1024 ** 3}).toFixed(1) + ' GB | Feasibility: ' + (($responseItem.size * 1.2 / ${1024 ** 3}) <= 8 ? 'Suitable for 8 GB RAM' : ($responseItem.size * 1.2 / ${1024 ** 3}) <= 16 ? 'Suitable for 16 GB RAM' : ($responseItem.size * 1.2 / ${1024 ** 3}) <= 32 ? 'Suitable for 32 GB RAM' : ($responseItem.size * 1.2 / ${1024 ** 3}) <= 64 ? 'Suitable for 64 GB RAM' : 'Requires more than 64 GB RAM') : ''}}`,
 							},
 						},
 						{
